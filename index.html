@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<!--
+This app is designed to run the CloudLamp created by Andrew Binder.
+-->
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<meta http-equiv="pragma" content="no-cache" />
+	<meta http-equiv="expires" content="-1" />
+
+	<button onclick="window.location.reload(true)">Reload</button>
+
+	<title>Cloud Lamp</title>
+
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	window.onerror = function(msg, url, line)
+	{
+		console.log(msg + ": " + url + ":" + line);
+	};
+	</script>
+
+	<script src="cordova.js"></script>
+	<script src="libs/jquery/jquery.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/ui/ui.js"></script>
+	<script src="libs/evothings/arduinoble/arduinoble.js"></script>
+
+</head>
+
+<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
+
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+
+		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
+	</header>
+
+	<h1>Cloud Lamp Trial</h1>
+
+	<p id="info">Initializing...</p>
+
+	<button class="yellow wide" onclick="app.connect()">CONNECT</button>
+
+	<br />
+
+	<h1>Cloud Modes</h1>
+
+	<button class="green wide" onclick="app.whiteOn()">WHITE</button>
+
+	<button class="green wide" onclick="app.lightningOn()">LIGHTNING</button>
+
+	<br />
+		
+	<button class="green wide" onclick="app.auroraOn()">AURORA</button>
+	<button class="green wide" onclick="app.sunsetOn()">SUNSET</button>
+	<button class="green wide" onclick="app.rainbowOn()">RAINBOW</button>
+
+	<br />
+
+	<button class="red wide big" onclick="app.cloudOff()">CLOUD OFF</button>
+
+	<br />
+
+	<h1>Brightness</h1>
+
+	<button class="grey wide" onclick="app.brightnessUp()">+</button>
+	<button class="grey wide" onclick="app.brightnessDown()">-</button>
+
+	<h1>Speed</h1>
+
+	<button class="grey wide" onclick="app.speedUp()">+</button>
+	<button class="grey wide" onclick="app.speedDown()">-</button>
+
+	<h1>LED Rotation Direction</h1>
+
+	<button class="grey wide" onclick="app.vertical()">VERTICAL</button>
+	<button class="grey wide" onclick="app.horizontal()">HORIZONTAL</button>
+
+
+
+	<script>
+	// Application object.
+	var app = {}
+
+	// Connected device.
+	app.device = null;
+
+	// Turn on white mode.
+	app.whiteOn = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'wb');
+	}
+
+	// Turn on lightning mode.
+	app.lightningOn = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'l');
+	}
+
+	// Turn on aurora mode.
+	app.auroraOn = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'a');
+	}
+
+	// Turn on sunset mode.
+	app.sunsetOn = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 's');
+	}
+
+	// Turn on rainbow mode.
+	app.rainbowOn = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'r');
+	}
+
+	// Turn off cloud.
+	app.cloudOff = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'o');
+	}
+
+	// Increase brightness.
+	app.brightnessUp = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'b');
+	}
+
+	// Decrease brightness.
+	app.brightnessDown = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'd');
+	}
+
+	// Increase speed.
+	app.speedUp = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), '+');
+	}
+
+	// Decrease speed.
+	app.speedDown = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), '-');
+	}
+
+	// Vertical rotation.
+	app.vertical = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'v');
+	}
+
+	// Horizontal rotation.
+	app.horizontal = function()
+	{
+		app.device && app.device.writeDataArray(new Uint8Array([1]), 'h');
+	}
+
+
+
+	app.showMessage = function(info)
+	{
+		document.getElementById('info').innerHTML = info
+	};
+
+	// Called when BLE and other native functions are available.
+	app.onDeviceReady = function()
+	{
+		app.showMessage('Touch the connect button to begin.');
+	};
+
+	app.connect = function()
+	{
+		evothings.arduinoble.close();
+		
+		app.showMessage('Connecting...');
+
+		evothings.arduinoble.connect(
+			'HMSOFT', // Advertised name of BLE device.
+			function(device)
+			{
+				app.device = device;
+				app.showMessage('Connected! Touch buttons to turn LED on/off.');
+			},
+			function(errorCode)
+			{
+				app.showMessage('Connect error: ' + errorCode + '.');
+			});
+	};
+
+	document.addEventListener(
+		'deviceready',
+		function() { evothings.scriptsLoaded(app.onDeviceReady) },
+		false);
+	</script>
+
+</body>
+
+</html>
