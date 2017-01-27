@@ -12,7 +12,7 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 	<meta http-equiv="pragma" content="no-cache" />
 	<meta http-equiv="expires" content="-1" />
 
-	<button onclick="window.location.reload(true)">Reload</button>
+	<!-- <button onclick="window.location.reload(true)">Reload</button> -->
 
 	<title>Cloud Lamp</title>
 
@@ -35,7 +35,12 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 	<script src="libs/evothings/ui/ui.js"></script>
 	<script src="libs/evothings/arduinoble/arduinoble.js"></script>
 
+	<script src="libs/evothings/util/util.js"></script>
+	<script src="libs/evothings/easyble/easyble.js"></script>
+
 </head>
+
+
 
 <body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
 
@@ -49,156 +54,64 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
 	</header>
 
-	<h1>Cloud Lamp Trial</h1>
+	<!-- <h1>Cloud Lamp Trial</h1> -->
 
 	<p id="info">Initializing...</p>
 
-	<button class="yellow wide" onclick="app.connect()">CONNECT</button>
-
-	<br />
-
 	<h1>Cloud Modes</h1>
 
-	<button class="green wide" onclick="app.whiteOn()">WHITE</button>
 
-	<button class="green wide" onclick="app.lightningOn()">LIGHTNING</button>
+
+	<button class="green wide" onclick="app.sendMessage('wb')">WHITE</button>
+
+	<button class="green wide" onclick="app.sendMessage('l')">LIGHTNING</button>
 
 	<br />
 		
-	<button class="green wide" onclick="app.auroraOn()">AURORA</button>
-	<button class="green wide" onclick="app.sunsetOn()">SUNSET</button>
-	<button class="green wide" onclick="app.rainbowOn()">RAINBOW</button>
+	<button class="green wide" onclick="app.sendMessage('a')">AURORA</button>
+	<button class="green wide" onclick="app.sendMessage('s')">SUNSET</button>
+	<button class="green wide" onclick="app.sendMessage('r')">RAINBOW</button>
 
 	<br />
 
-	<button class="red wide big" onclick="app.cloudOff()">CLOUD OFF</button>
-	<button class="red wide big" onclick="app.sendMessage(l)">Lightning8</button>
+	<button class="red wide big" onclick="app.sendMessage('o')">CLOUD OFF</button>
 
 	<br />
 
 	<h1>Brightness</h1>
 
-	<button class="grey wide" onclick="app.brightnessUp()">+</button>
-	<button class="grey wide" onclick="app.brightnessDown()">-</button>
+	<button class="grey wide" onclick="app.sendMessage('b')">+</button>
+	<button class="grey wide" onclick="app.sendMessage('d')">-</button>
+	<button class="grey" onclick="app.readMessage()">Read</button>
+	
+
+	<input id="messageField" value="Hello World!" type="text"
+				onchange="app.sendMessage()">
 
 	<h1>Speed</h1>
 
-	<button class="grey wide" onclick="app.speedUp()">+</button>
-	<button class="grey wide" onclick="app.speedDown()">-</button>
+	<button class="grey wide" onclick="app.sendMessage('+')">+</button>
+	<button class="grey wide" onclick="app.sendMessage('-')">-</button>
+
+	<input id="messageField" value="Hello World!" type="text"
+				onchange="app.sendMessage()">
 
 	<h1>LED Rotation Direction</h1>
 
-	<button class="grey wide" onclick="app.vertical()">VERTICAL</button>
-	<button class="grey wide" onclick="app.horizontal()">HORIZONTAL</button>
+	<button class="grey wide" onclick="app.sendMessage('v')">VERTICAL</button>
+	<button class="grey wide" onclick="app.sendMessage('h')">HORIZONTAL</button>
 	
-	<h1>Alternative Methods</h1>
-
-	<button class="grey wide" onclick="app.sendData(['a'])">Aurora</button>
-	<button class="grey wide" onclick="app.sendData(['l'])">Lightning</button>
-	<button class="grey wide" onclick="app.sendData([l])">Lightning2</button>
-	<button class="grey wide" onclick="app.sendData('l')">Lightning3</button>
-	<button class="grey wide" onclick="app.sendData(l)">Lightning4</button>
-	<button class="grey wide" onclick="app.sendMessage(['l'])">Lightning5</button>
-	<button class="grey wide" onclick="app.sendMessage([l])">Lightning6</button>
-	<button class="grey wide" onclick="app.sendMessage('l')">Lightning7</button>
-	<br />
-	<button class="red wide big" onclick="app.sendMessage(l)">Lightning8</button>
-	<br />
-	
-		<div id="conversationView" style="display:none">
-
-		<div id="conversation"></div>
-
-		<div id="conversationControl" style="width:100%">
-
-			<input id="messageField" value="Hello World!" type="text"
-				onchange="app.sendMessage()">
-
-			<button id="sendButton" class="green wide"
-				onclick="app.sendMessage()">Send</button>
-
-
 
 	<script>
-	// Application object.
-	var app = {}
 
-	// Connected device.
-	app.device = null;
+	var app = {}; // Object holding the functions and variables
+	var BluefruitUART = null; // Object holding the BLE device
+	var BLEDevice = {}; // Object holding Bluefruit BLE device information
 
-	// Turn on white mode.
-	app.whiteOn = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'wb');
-	}
-
-	// Turn on lightning mode.
-	app.lightningOn = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'l');
-	}
-
-	// Turn on aurora mode.
-	app.auroraOn = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'a');
-	}
-
-	// Turn on sunset mode.
-	app.sunsetOn = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 's');
-	}
-
-	// Turn on rainbow mode.
-	app.rainbowOn = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'r');
-	}
-
-	// Turn off cloud.
-	app.cloudOff = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'o');
-	}
-
-	// Increase brightness.
-	app.brightnessUp = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'b');
-	}
-
-	// Decrease brightness.
-	app.brightnessDown = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'd');
-	}
-
-	// Increase speed.
-	app.speedUp = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), '+');
-	}
-
-	// Decrease speed.
-	app.speedDown = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), '-');
-	}
-
-	// Vertical rotation.
-	app.vertical = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'v');
-	}
-
-	// Horizontal rotation.
-	app.horizontal = function()
-	{
-		app.device && app.device.writeDataArray(new Uint8Array([1]), 'h');
-	}
-
-
+	BLEDevice.name = 'HMSoft'; // Bluefruit name
+	BLEDevice.services = ['0000ffe0-0000-1000-8000-00805f9b34fb']; // Bluefruit services UUID
+	BLEDevice.writeCharacteristicUUID = '0000ffe1-0000-1000-8000-00805f9b34fb'; // Bluefruit writeCharacteristic UUID
+	BLEDevice.readCharacteristicUUID = '0000ffe2-0000-1000-8000-00805f9b34fb'; // Bluefruit readCharacteristic UUID
 
 	app.showMessage = function(info)
 	{
@@ -208,32 +121,81 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 	// Called when BLE and other native functions are available.
 	app.onDeviceReady = function()
 	{
-		app.showMessage('Touch the connect button to begin.');
+		evothings.easyble.startScan // Start scanning
+		(
+				function(device)
+				{
+					console.log('Scan started');
+					if (device.name == BLEDevice.name) // If device name correspond to Bluefruit device name
+					{
+						evothings.easyble.stopScan(); // Stop the scan
+						BluefruitUART = device; // Store the Bluefruit device
+
+						console.log('Adafruit Bluefruit LE UART found !');
+
+						BluefruitUART.connect // Connect to Bluefruit device
+						(
+								function(device)
+								{
+									console.log('Connected to BLE device ' + BluefruitUART.name);
+									app.showMessage('Connected! Touch buttons to turn LED on/off.');
+									app.readServices();
+								},
+								function(errorCode)
+								{
+									console.log('Failed to connect to BLE device: ' + errorCode);
+								}
+						)
+					}
+				},
+				function(errorString)
+				{
+					console.log('Error while scanning: ' + errorString);
+					app.showMessage('Connect error: ' + errorString + '.');
+				}
+		);
 	};
 
-	app.connect = function()
-	{
-		evothings.arduinoble.close();
-		
-		app.showMessage('Connecting...');
-
-		evothings.arduinoble.connect(
-			'HMSoft', // Advertised name of BLE device.
-			function(device)
-			{
-				app.device = device;
-				app.showMessage('Connected! Touch buttons to turn LED on/off.');
-			},
-			function(errorCode)
-			{
-				app.showMessage('Connect error: ' + errorCode + '.');
-			});
-	};
-
-	document.addEventListener(
+		document.addEventListener(
 		'deviceready',
 		function() { evothings.scriptsLoaded(app.onDeviceReady) },
 		false);
+
+
+	app.readServices = function() // Read services from Bluefruit device
+	{
+		BluefruitUART.readServices
+		(
+				BLEDevice.services,
+				function(device)
+				{
+					console.log('BLE services available for device ' + BluefruitUART.name);
+				},
+				function(errorString)
+				{
+					console.log('BLE services error: ' + errorString);
+				}
+		)
+	};
+
+	app.sendMessage = function(message) // Send a message to Bluefruit device
+	{
+		var data = evothings.ble.toUtf8(message);
+		BluefruitUART.writeCharacteristic
+		(
+				BLEDevice.writeCharacteristicUUID,
+				data,
+				function()
+				{
+					console.log('Sent: ' + message);
+				},
+				function(errorString)
+				{
+					console.log('BLE writeCharacteristic error: ' + errorString);
+				}
+		)
+	};
+
 	</script>
 
 </body>
