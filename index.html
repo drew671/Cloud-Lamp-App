@@ -59,15 +59,13 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 	<p id="info">Initializing...</p>
 
 	<h1>Cloud Modes</h1>
-
 	<button class="green wide" onclick="app.sendMessage('w')">WHITE</button>
 	<button class="green wide" onclick="app.sendMessage('y')">YELLOW</button>
-	<button class="green wide" onclick="app.sendMessage('n')">RED</button>
+	<button class="green wide" onclick="app.sendMessage('')">RED</button>
 	<button class="green wide" onclick="app.sendMessage('l')">LIGHTNING</button>
 	<button class="green wide" onclick="app.sendMessage('a')">AURORA</button>
 	<button class="green wide" onclick="app.sendMessage('s')">SUNSET</button>
 	<button class="green wide" onclick="app.sendMessage('r')">RAINBOW</button>
-	
 	<button class="red wide big" onclick="app.sendMessage('o')">CLOUD OFF</button>
 
 	<h1>Brightness</h1>
@@ -86,6 +84,10 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 
 	<button class="grey wide" onclick="app.sendMessage('v')">VERTICAL</button>
 	<button class="grey wide" onclick="app.sendMessage('h')">HORIZONTAL</button>
+
+	<h1>Bluetooth Connection</h1>
+	<button class="yellow wide" onclick="app.onDeviceReady(app.readServices)">CONNECT</button>
+	<button class="red wide" onclick="app.disconnect()">DISCONNECT</button>
 	
 
 	<script>
@@ -105,8 +107,11 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 	};
 
 	// Called when BLE and other native functions are available.
-	app.onDeviceReady = function()
+	app.onDeviceReady = function(callback)
 	{
+		setTimeout(disconnect, 300000);	//disconnect after 5 min
+		app.showMessage('Auto disconnected.');
+
 		evothings.easyble.startScan // Start scanning
 		(
 				function(device)
@@ -127,19 +132,34 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 									app.showMessage('Connected! Touch buttons to turn LED on/off.');
 									app.readServices();
 								},
+
 								function(errorCode)
 								{
 									console.log('Failed to connect to BLE device: ' + errorCode);
-								}
-						)
+								}	
+						)	
 					}
 				},
+	
 				function(errorString)
 				{
 					console.log('Error while scanning: ' + errorString);
 					app.showMessage('Connect error: ' + errorString + '.');
 				}
 		);
+
+		function disconnect()
+			{
+				evothings.easyble.stopScan();
+				BluefruitUART.close();
+			}
+	};
+
+	app.disconnect = function() // Disconnect from Bluefruit device
+	{
+		evothings.easyble.stopScan();
+		BluefruitUART.close();
+		console.log('Disconnected from BLE device ' + BluefruitUART.name);
 	};
 
 		document.addEventListener(
