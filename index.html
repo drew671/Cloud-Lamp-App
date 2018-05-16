@@ -109,7 +109,7 @@ This app is designed to run the CloudLamp created by Andrew Binder.
 	// Called when BLE and other native functions are available.
 	app.onDeviceReady = function(callback)
 	{
-		setTimeout(disconnect, 300000);	//disconnect after 5 min
+		setTimeout(disconnect, 30000);	//disconnect after 0.5 min
 		app.showMessage('Auto disconnected.');
 
 		evothings.easyble.startScan // Start scanning
